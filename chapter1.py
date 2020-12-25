@@ -29,5 +29,4 @@ cv2.imshow("Canny Image",imgCanny)
 cv2.imshow("Dialation Image", imgDilation)
 cv2.imshow("Erosion Image", imgEroded)
 
-
 cv2.waitKey(0)
