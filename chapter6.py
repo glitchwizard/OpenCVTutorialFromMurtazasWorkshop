@@ -33,7 +33,8 @@ def stackImages(scale,imgArray):
         ver = hor
     return ver
 
-
+imgStack = stackImages(0.5, [img, img, img])
+cv2.imshow("Image Stack", imgStack)
 
 # imgHor = np.hstack((img, img))
 # imgVert = np.vstack((img,img))
