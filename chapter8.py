@@ -16,6 +16,12 @@ def getContours(img):
             x, y, w, h = cv2.boundingRect(approximate_corner_points)
 
             if corners == 3: objectType = "Triangle"
+            elif corners == 4:
+                aspectRatio = w/float(h)
+                if aspectRatio > 0.95 and aspectRatio < 1.05: objectType = "Square"
+                else: objectType = "Rectangle"
+            elif corners > 4:
+                objectType = "Circle"
             else: objectType = "None"
 
 
@@ -37,7 +43,7 @@ imgCanny = cv2.Canny(imgBlur, 50, 50)
 getContours(imgCanny)
 
 imgBlank = np.zeros_like(img)
-imgStack = stackImages(0.6, ([img, imgGray, imgBlur],
+imgStack = stackImages(0.8, ([img, imgGray, imgBlur],
                              [imgCanny, imgContour, imgBlank]))
 
 cv2.imshow("Stack", imgStack)
