@@ -37,7 +37,9 @@ def stackImages(scale,imgArray):
 imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 imgStack = stackImages(0.5, ([img, imgGray, img], [img, img, imgGray]))
-cv2.imshow("Image Stack", imgStack)
+
+#uncomment the line below to show the result of this chapter, needed to comment it out because of Chapter 7
+#cv2.imshow("Image Stack", imgStack)
 
 # imgHor = np.hstack((img, img))
 # imgVert = np.vstack((img,img))
