@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 img = cv2.imread("Resources\kam.jpg")
 
+#function stackImages provided by Murtaza's Workshop
 def stackImages(scale,imgArray):
     rows = len(imgArray)
     columns = len(imgArray[0])
@@ -33,7 +34,7 @@ def stackImages(scale,imgArray):
         ver = hor
     return ver
 
-imgStack = stackImages(0.5, [img, img, img])
+imgStack = stackImages(0.5, ([img, img, img],[img, img, img ]))
 cv2.imshow("Image Stack", imgStack)
 
 # imgHor = np.hstack((img, img))
