@@ -15,8 +15,14 @@ def getContours(img):
             corners = len(approximate_corner_points)
             x, y, w, h = cv2.boundingRect(approximate_corner_points)
 
+            if corners == 3: objectType = "Triangle"
+            else: objectType = "None"
+
+
             #this is how a bounding box is drawn
             cv2.rectangle(imgContour,(x,y),(x+w, y+h), (0,255,0), 2)
+            cv2.putText(imgContour, objectType, (x+(w//2)-10, y+(h//2)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 100, 100), 2)
+
 
 
 
