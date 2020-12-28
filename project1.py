@@ -11,10 +11,16 @@ myColors = [
                 [57, 76, 0, 100, 255, 255, "Green"]  #green
             ]
 
+myColorValues = [                   ##this is BGR, not RGB
+                    [51, 153, 255], # Orange
+                    [255, 0, 255],  # Purple
+                    [0, 255, 0]     # Green
+                ]
+
 
 def findColor(img, myColors):
     imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
+    count = 0
     for color in myColors:
         # lower = np.array([h_min, s_min, v_min])
         # upper = np.array([h_max, s_max, v_max])
@@ -24,7 +30,8 @@ def findColor(img, myColors):
 
         mask = cv2.inRange(imgHSV, lower, upper)
         x, y = getContours(mask)
-        cv2.circle(imgResult,(x,y), 10, (255,0,0), cv2.FILLED)
+        cv2.circle(imgResult,(x,y), 10, myColorValues[count], cv2.FILLED)
+        count += 1
         #cv2.imshow(str(color[6]), mask)
 
 def getContours(img):
