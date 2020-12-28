@@ -1,6 +1,10 @@
 import cv2
 import numpy as np
 
+#Project
+#Screen painting by color
+#it will take individual colors and allow you to paint with them on a screen
+
 cap = cv2.VideoCapture(0)
 cap.set(3, 640)
 cap.set(4, 480)
