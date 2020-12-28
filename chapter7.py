@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 from chapter6 import stackImages
 
+#Color Detection
+
 def empty(a):
     pass
 
