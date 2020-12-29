@@ -9,16 +9,34 @@ heightImg = 480
 captureDevice = cv2.VideoCapture(0)
 captureDevice.set(3, widthImg)
 captureDevice.set(4, heightImg)
-captureDevice.set(10, 140)
+captureDevice.set(10, 160)
+
+def empty(a):
+    pass
+
+cv2.namedWindow("Capture Parameters")
+cv2.resizeWindow("Capture Parameters", 640, 100)
+cv2.createTrackbar("Canny Min Threshold", "Capture Parameters", 25, 255, empty)
+cv2.createTrackbar("Canny Max Threshold", "Capture Parameters", 90, 255, empty)
+
+#TODO: refactor so things actually make sense
+
+def getImgCanny(img, min, max):
+    return cv2.Canny(img, min, max)
+
+def convertImgToGrayscale(img):
+    return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+def blurImage(img):
+    return cv2.GaussianBlur(img, (5, 5), 1)
 
 def preProcessing(img):
-    imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    imgBlur = cv2.GaussianBlur(imgGray, (5, 5), 1)
-    imgCanny = cv2.Canny(imgBlur, 100, 150)
+    imgGray = convertImgToGrayscale(img)
+    imgBlur = blurImage(imgGray)
+    imgCanny = getImgCanny(imgBlur, canny_min_threshold, canny_max_threshold)
     kernel = np.ones((5, 5))
-    imgDialation = cv2.dilate(imgCanny, kernel, iterations= 2)
-    imgThreshold = cv2.erode(imgDialation, kernel, iterations=1)
-
+    imgDialation = cv2.dilate(imgCanny, kernel, iterations= 3)
+    imgThreshold = cv2.erode(imgDialation, kernel, iterations=3)
     return imgThreshold
 
 def getContours(img):
@@ -37,10 +55,25 @@ def getContours(img):
 
                 #this will replace whatever area it has found before with the bigger area until it finds the max area
                 maxArea = area
+    cv2.drawContours(imgContour, biggest, -1, (255, 0, 0), 20)
     return biggest
 
     # corners = len(approximate_corner_points)
     # x, y, w, h = cv2.boundingRect(approximate_corner_points)
+
+def reorderPointsForWarpOptimization(myPoints):
+
+    pass
+
+def getWarp(img, biggest):
+
+    pts1 = np.float32(biggest)
+    pts2 = np.float32([[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])
+
+    matrix = cv2.getPerspectiveTransform(pts1, pts2)
+    imgOutput = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
+
+    return imgOutput
 
 
 #function stackImages provided by Murtaza's Workshop
@@ -79,13 +112,34 @@ while True:
     success, img = captureDevice.read()
     img = cv2.resize(img, (widthImg, heightImg))
     imgContour = img.copy()
-    imgThreshold = preProcessing(img)
-    getContours(imgThreshold)
-    cv2.putText(img, "Webcam", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5,  (0, 100, 100), 2)
-    cv2.putText(imgThreshold, "PreProcessed", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5,  (0, 100, 100), 2)
-    cv2.putText(imgContour, "Contour", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5,  (0, 100, 100), 2)
 
-    imgStack = stackImages(0.8, ([img, imgThreshold, imgContour]))
+    canny_min_threshold = cv2.getTrackbarPos("Canny Min Threshold","Capture Parameters")
+    canny_max_threshold = cv2.getTrackbarPos("Canny Max Threshold","Capture Parameters")
+
+    imgThreshold = preProcessing(img)
+
+    biggest = getContours(imgThreshold)
+
+    print(biggest)
+    imgGray = convertImgToGrayscale(img)
+    imgBlur = blurImage(imgGray)
+    imgCanny = getImgCanny(imgBlur, canny_min_threshold, canny_max_threshold)
+
+    if biggest.size != 0:
+        imgWarped = getWarp(img, biggest)
+        cv2.putText(img, "Webcam", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5,  (0, 100, 100), 2)
+        cv2.putText(imgThreshold, "PreProcessed", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5,  (0, 100, 100), 2)
+        cv2.putText(imgContour, "Contour", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5,  (0, 100, 100), 2)
+        zeroImg = np.zeros_like(img)
+
+
+
+        imageArray = ([img, imgThreshold, imgContour],
+                             [imgWarped, imgCanny, zeroImg])
+
+    else: imageArray = ([img, imgCanny, imgContour])
+
+    imgStack = stackImages(0.8, imageArray)
 
     cv2.imshow("Image stack", imgStack)
 
