@@ -3,8 +3,8 @@ import numpy as np
 
 #Document Scanner using OpenCV
 
-widthImg = 480
-heightImg = 640
+widthImg = 640
+heightImg = 480
 
 captureDevice = cv2.VideoCapture(0)
 captureDevice.set(3, widthImg)
@@ -17,7 +17,7 @@ def empty(a):
 cv2.namedWindow("Capture Parameters")
 cv2.resizeWindow("Capture Parameters", 640, 100)
 cv2.createTrackbar("Canny Min Threshold", "Capture Parameters", 25, 255, empty)
-cv2.createTrackbar("Canny Max Threshold", "Capture Parameters", 90, 255, empty)
+cv2.createTrackbar("Canny Max Threshold", "Capture Parameters", 75, 255, empty)
 
 #TODO: refactor so things actually make sense
 
@@ -28,15 +28,15 @@ def convertImgToGrayscale(img):
     return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 def blurImage(img):
-    return cv2.GaussianBlur(img, (5, 5), 1)
+    return cv2.GaussianBlur(img, (7, 7), 1)
 
 def preProcessing(img):
     imgGray = convertImgToGrayscale(img)
     imgBlur = blurImage(imgGray)
     imgCanny = getImgCanny(imgBlur, canny_min_threshold, canny_max_threshold)
-    kernel = np.ones((5, 5))
-    imgDialation = cv2.dilate(imgCanny, kernel, iterations= 3)
-    imgThreshold = cv2.erode(imgDialation, kernel, iterations=3)
+    kernel = np.ones((7, 7))
+    imgDialation = cv2.dilate(imgCanny, kernel, iterations= 2)
+    imgThreshold = cv2.erode(imgDialation, kernel, iterations=1)
     return imgThreshold
 
 def getContours(img):
@@ -90,7 +90,10 @@ def getWarp(img, biggest):
     matrix = cv2.getPerspectiveTransform(pts1, pts2)
     imgOutput = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
 
-    return imgOutput
+    imgCropped = imgOutput[20:imgOutput.shape[0]-20,20:imgOutput.shape[1]-20]
+    imgCropped = cv2.resize(imgCropped, (widthImg, heightImg))
+
+    return imgCropped
 
 
 #function stackImages provided by Murtaza's Workshop
@@ -141,16 +144,16 @@ while True:
     imgGray = convertImgToGrayscale(img)
     imgBlur = blurImage(imgGray)
     imgCanny = getImgCanny(imgBlur, canny_min_threshold, canny_max_threshold)
+    zeroImg = np.zeros_like(img)
 
     if biggest.size != 0:
         imgWarped = getWarp(img, biggest)
         cv2.putText(img, "Webcam", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5,  (0, 100, 100), 2)
         cv2.putText(imgThreshold, "PreProcessed", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5,  (0, 100, 100), 2)
         cv2.putText(imgContour, "Contour", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5,  (0, 100, 100), 2)
-        zeroImg = np.zeros_like(img)
 
         imageArray = ([img, imgThreshold, imgContour],
-                             [imgWarped, imgCanny, zeroImg])
+                      [imgWarped, imgCanny, zeroImg])
 
     else: imageArray = ([img, imgCanny, imgContour])
 
@@ -158,6 +161,6 @@ while True:
 
     cv2.imshow("Image stack", imgStack)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(100) & 0xFF == ord('q'):
         break
 
