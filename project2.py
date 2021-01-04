@@ -3,8 +3,8 @@ import numpy as np
 
 #Document Scanner using OpenCV
 
-widthImg = 640
-heightImg = 480
+widthImg = 480
+heightImg = 640
 
 captureDevice = cv2.VideoCapture(0)
 captureDevice.set(3, widthImg)
@@ -62,11 +62,28 @@ def getContours(img):
     # x, y, w, h = cv2.boundingRect(approximate_corner_points)
 
 def reorderPointsForWarpOptimization(myPoints):
+    myPoints = myPoints.reshape((4, 2))
+    myPointsNew = np.zeros((4, 1, 2), np.int32)
+    add = myPoints.sum(1)
 
-    pass
+    #take the minimum value point and set it as the first index
+    myPointsNew[0] = myPoints[np.argmin(add)]
+    #take the maximum value point and set it as the last index
+    myPointsNew[3] = myPoints[np.argmax(add)]
+
+    diff = np.diff(myPoints, axis = 1)
+    #find the second highest and lowest points, and set them where they need to go.
+    myPointsNew[1] = myPoints[np.argmin(diff)]
+    myPointsNew[2] = myPoints[np.argmax(diff)]
+
+    return myPointsNew
+
+
 
 def getWarp(img, biggest):
-
+    #the points don't come in with the right orientation, so we need to reorder them to warp properly
+    biggest = reorderPointsForWarpOptimization(biggest)
+    print("biggestshape:",biggest.shape)
     pts1 = np.float32(biggest)
     pts2 = np.float32([[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])
 
@@ -131,8 +148,6 @@ while True:
         cv2.putText(imgThreshold, "PreProcessed", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5,  (0, 100, 100), 2)
         cv2.putText(imgContour, "Contour", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.5,  (0, 100, 100), 2)
         zeroImg = np.zeros_like(img)
-
-
 
         imageArray = ([img, imgThreshold, imgContour],
                              [imgWarped, imgCanny, zeroImg])
