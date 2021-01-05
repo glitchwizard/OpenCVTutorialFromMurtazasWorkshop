@@ -11,6 +11,7 @@ captureDevice = cv2.VideoCapture(0)
 captureDevice.set(3, frameWidth)
 captureDevice.set(4, frameHeight)
 captureDevice.set(10, 160)
+count = 0
 
 
 while True:
@@ -29,5 +30,11 @@ while True:
             cv2.imshow("RegionOfInterest", imgRegionOfInterest)
 
     cv2.imshow("Result", img)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    if cv2.waitKey(1) & 0xFF == ord('s'):
+        cv2.imwrite("Resources/Scanned/LicensePlate_"+ str(count) + ".jpg", imgRegionOfInterest)
+        cv2.rectangle(img,(0,200), (640,300), (0,255,0), cv2.FILLED)
+        cv2.putText(img, "Scan Saved", (150, 265), cv2.FONT_HERSHEY_DUPLEX, 2, (0,0,255), 2)
+        cv2.imshow("Result", img)
+        cv2.waitKey(500)
+        count += 1
+
